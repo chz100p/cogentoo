@@ -1,7 +1,7 @@
 VERSION = 2
 PATCHLEVEL = 6
 SUBLEVEL = 33
-EXTRAVERSION = .7
+EXTRAVERSION = -gentoo-r3
 NAME = Man-Eating Seals of Antiquity
 
 # *DOCUMENTATION*
