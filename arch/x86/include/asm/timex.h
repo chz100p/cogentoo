@@ -7,6 +7,8 @@
 /* Assume we use the PIT time source for the clock tick */
 #define CLOCK_TICK_RATE		PIT_TICK_RATE
 
+#ifndef CONFIG_COOPERATIVE
 #define ARCH_HAS_READ_CURRENT_TIMER
+#endif /* !CONFIG_COOPERATIVE */
 
 #endif /* _ASM_X86_TIMEX_H */

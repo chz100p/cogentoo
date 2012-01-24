@@ -14,6 +14,7 @@
 #endif	/* CONFIG_X86_64 */
 
 #ifndef __ASSEMBLY__
+#include <asm/cooperative.h>
 
 struct page;
 
@@ -52,6 +53,20 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 #define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
 extern bool __virt_addr_valid(unsigned long kaddr);
 #define virt_addr_valid(kaddr)	__virt_addr_valid((unsigned long) (kaddr))
+
+#ifdef CONFIG_COOPERATIVE
+#define CO_PA(pfn)		(((unsigned long *)CO_VPTR_PSEUDO_RAM_PAGE_TABLES)[pfn])
+#define CO_VA_PFN(pa)		(((unsigned long *)CO_VPTR_PHYSICAL_TO_PSEUDO_PFN_MAP)[((pa) >> PAGE_SHIFT)])
+#define CO_PFN_PP_TO_P(pfn)	(CO_PA(pfn) >> PAGE_SHIFT)
+#define CO_PFN_P_TO_PP(pfn)	(CO_VA_PFN(pfn << PAGE_SHIFT))
+#define CO_PP_TO_P(pa)	        ((CO_PFN_PP_TO_P(pa >> PAGE_SHIFT) << PAGE_SHIFT) | (pa & ~PAGE_MASK))
+#define CO_P_TO_PP(pa)	        ((CO_PFN_P_TO_PP(pa >> PAGE_SHIFT) << PAGE_SHIFT) | (pa & ~PAGE_MASK))
+#else
+#define CO_PFN_P_TO_PP(pfn)	pfn
+#define CO_PFN_PP_TO_P(pfn)	pfn
+#define CO_PP_TO_P(pa)        	pa
+#define CO_P_TO_PP(pa)	        pa
+#endif
 
 #endif	/* __ASSEMBLY__ */
 

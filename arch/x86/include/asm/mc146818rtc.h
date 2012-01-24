@@ -87,6 +87,8 @@ static inline unsigned char current_lock_cmos_reg(void)
 #define current_lock_cmos_reg() 0
 #endif
 
+#ifndef CONFIG_COOPERATIVE
+
 /*
  * The yet supported machines all access the RTC index register via
  * an ISA port access but the way to access the date register differs ...
@@ -98,6 +100,11 @@ void rtc_cmos_write(unsigned char val, unsigned char addr);
 
 extern int mach_set_rtc_mmss(unsigned long nowtime);
 extern unsigned long mach_get_cmos_time(void);
+
+#else
+#define CMOS_READ(addr) (0)
+#define CMOS_WRITE(val, addr) do {} while(0)
+#endif
 
 #define RTC_IRQ 8
 

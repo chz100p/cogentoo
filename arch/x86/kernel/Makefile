@@ -2,7 +2,11 @@
 # Makefile for the linux kernel.
 #
 
-extra-y                := head_$(BITS).o head$(BITS).o head.o init_task.o vmlinux.lds
+extra-y                := head_$(BITS).o
+ifndef CONFIG_COOPERATIVE
+extra-y                += head$(BITS).o head.o
+endif
+extra-y                += init_task.o vmlinux.lds
 
 CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 
@@ -31,17 +35,24 @@ GCOV_PROFILE_paravirt.o		:= n
 
 obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
 obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
-obj-y			+= time.o ioport.o ldt.o dumpstack.o
-obj-y			+= setup.o x86_init.o i8259.o irqinit.o
+obj-y			+= ldt.o dumpstack.o
+obj-y			+= setup.o irqinit.o
 obj-$(CONFIG_X86_VISWS)	+= visws_quirks.o
+ifndef CONFIG_COOPERATIVE
 obj-$(CONFIG_X86_32)	+= probe_roms_32.o
+endif
 obj-$(CONFIG_X86_32)	+= sys_i386_32.o i386_ksyms_32.o
 obj-$(CONFIG_X86_64)	+= sys_x86_64.o x8664_ksyms_64.o
 obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
-obj-y			+= bootflag.o e820.o
-obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
-obj-y			+= alternative.o i8253.o pci-nommu.o hw_breakpoint.o
+ifndef CONFIG_COOPERATIVE
+obj-y			+= bootflag.o
+endif
+obj-$(CONFIG_HAS_DMA)	+= pci-dma.o pci-nommu.o
+obj-y			+= quirks.o i8237.o topology.o kdebugfs.o
+obj-y			+= alternative.o hw_breakpoint.o
+ifndef CONFIG_COOPERATIVE
 obj-y			+= tsc.o io_delay.o rtc.o
+endif
 
 obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
 obj-y				+= process.o
@@ -57,11 +68,12 @@ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
 obj-y				+= cpu/
 obj-y				+= acpi/
 obj-$(CONFIG_SFI)		+= sfi.o
-obj-y				+= reboot.o
 obj-$(CONFIG_MCA)		+= mca_32.o
 obj-$(CONFIG_X86_MSR)		+= msr.o
 obj-$(CONFIG_X86_CPUID)		+= cpuid.o
+ifndef CONFIG_COOPERATIVE
 obj-$(CONFIG_PCI)		+= early-quirks.o
+endif
 apm-y				:= apm_32.o
 obj-$(CONFIG_APM)		+= apm.o
 obj-$(CONFIG_SMP)		+= smp.o
@@ -129,4 +141,20 @@ ifeq ($(CONFIG_X86_64),y)
 
 	obj-$(CONFIG_PCI_MMCONFIG)	+= mmconf-fam10h_64.o
 	obj-y				+= vsmp_64.o
+endif
+
+###
+# coLinux specific files
+ifdef CONFIG_COOPERATIVE
+obj-y			+= cooperative.o
+obj-y			+= timer_cooperative.o
+obj-y			+= ioport_cooperative.o i8259_cooperative.o
+obj-y			+= reboot_cooperative.o
+obj-y			+= x86_init_cooperative.o
+else
+obj-y			+= i8253.o i8259.o
+obj-y			+= time.o ioport.o
+obj-y			+= e820.o
+obj-y			+= reboot.o
+obj-y			+= x86_init.o
 endif

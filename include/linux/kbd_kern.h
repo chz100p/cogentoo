@@ -1,3 +1,4 @@
+
 #ifndef _KBD_KERN_H
 #define _KBD_KERN_H
 
@@ -66,6 +67,7 @@ struct kbd_struct {
 
 extern struct kbd_struct kbd_table[];
 
+extern void keyboard_inject_utf8(uint c);
 extern int kbd_init(void);
 
 extern unsigned char getledstate(void);

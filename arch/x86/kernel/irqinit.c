@@ -43,6 +43,7 @@
  * (these are usually mapped into the 0x30-0xff vector range)
  */
 
+#ifndef CONFIG_COOPERATIVE
 #ifdef CONFIG_X86_32
 /*
  * Note that on a 486, we don't want to do a SIGFPE on an irq13
@@ -82,6 +83,7 @@ static struct irqaction irq2 = {
 	.handler = no_action,
 	.name = "cascade",
 };
+#endif /* !CONFIG_COOPERATIVE */
 
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
 	[0 ... IRQ0_VECTOR - 1] = -1,
@@ -116,6 +118,7 @@ int vector_used_by_percpu_irq(unsigned int vector)
 	return 0;
 }
 
+#ifndef CONFIG_COOPERATIVE
 void __init init_ISA_irqs(void)
 {
 	int i;
@@ -249,3 +252,4 @@ void __init native_init_IRQ(void)
 	irq_ctx_init(smp_processor_id());
 #endif
 }
+#endif /* !CONFIG_COOPERATIVE */

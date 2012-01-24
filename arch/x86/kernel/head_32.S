@@ -359,6 +359,7 @@ ENTRY(startup_32_smp)
  */
 	call setup_idt
 
+ENTRY(co_arch_start_kernel)
 checkCPUtype:
 
 	movl $-1,X86_CPUID		#  -1 for no CPUID initially
@@ -567,6 +568,10 @@ early_fault:
 #endif
 	call dump_stack
 hlt_loop:
+#ifdef CONFIG_COOPERATIVE
+	movl $2,%eax		/* CO_TERMINATE_PANIC */
+	call co_terminate
+#endif
 	hlt
 	jmp hlt_loop
 
@@ -607,7 +612,11 @@ ignore_int:
 	__REFDATA
 .align 4
 ENTRY(initial_code)
+#ifdef CONFIG_COOPERATIVE
+	.long start_kernel
+#else /* CONFIG_COOPERATIVE */
 	.long i386_start_kernel
+#endif
 
 /*
  * BSS section
@@ -655,7 +664,7 @@ ENTRY(swapper_pg_dir)
 
 .data
 ENTRY(stack_start)
-	.long init_thread_union+THREAD_SIZE
+	.long init_thread_union+THREAD_SIZE-100
 	.long __BOOT_DS
 
 ready:	.byte 0

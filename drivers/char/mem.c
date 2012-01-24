@@ -22,6 +22,7 @@
 #include <linux/device.h>
 #include <linux/highmem.h>
 #include <linux/crash_dump.h>
+#include <linux/cooperative_internal.h>
 #include <linux/backing-dev.h>
 #include <linux/bootmem.h>
 #include <linux/splice.h>
@@ -130,6 +131,9 @@ static ssize_t read_mem(struct file * file, char __user * buf,
 	ssize_t read, sz;
 	char *ptr;
 
+	if (cooperative_mode_enabled())
+		return -ENOMEM;
+
 	if (!valid_phys_addr_range(p, count))
 		return -EFAULT;
 	read = 0;
@@ -187,6 +191,9 @@ static ssize_t write_mem(struct file * file, const char __user * buf,
 	ssize_t written, sz;
 	unsigned long copied;
 	void *ptr;
+
+	if (cooperative_mode_enabled())
+		return -ENOMEM;
 
 	if (!valid_phys_addr_range(p, count))
 		return -EFAULT;
@@ -298,6 +305,9 @@ static int mmap_mem(struct file * file, struct vm_area_struct * vma)
 {
 	size_t size = vma->vm_end - vma->vm_start;
 
+	if (cooperative_mode_enabled())
+		return -EFAULT;
+
 	if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
 		return -EINVAL;
 
@@ -332,6 +342,9 @@ static int mmap_mem(struct file * file, struct vm_area_struct * vma)
 static int mmap_kmem(struct file * file, struct vm_area_struct * vma)
 {
 	unsigned long pfn;
+
+	if (cooperative_mode_enabled())
+		return -EFAULT;
 
 	/* Turn a kernel-virtual address into a physical page frame */
 	pfn = __pa((u64)vma->vm_pgoff << PAGE_SHIFT) >> PAGE_SHIFT;
@@ -396,6 +409,9 @@ static ssize_t read_kmem(struct file *file, char __user *buf,
 	ssize_t low_count, read, sz;
 	char * kbuf; /* k-addr because vread() takes vmlist_lock rwlock */
 	int err = 0;
+
+	if (cooperative_mode_enabled())
+		return -ENOMEM;
 
 	read = 0;
 	if (p < (unsigned long) high_memory) {
@@ -526,6 +542,9 @@ static ssize_t write_kmem(struct file * file, const char __user * buf,
 	ssize_t virtr = 0;
 	char * kbuf; /* k-addr because vwrite() takes vmlist_lock rwlock */
 	int err = 0;
+
+	if (cooperative_mode_enabled())
+		return -ENOMEM;
 
 	if (p < (unsigned long) high_memory) {
 		unsigned long to_write = min_t(unsigned long, count,

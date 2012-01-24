@@ -12,6 +12,11 @@
 #include <asm/io.h>		/* need byte IO */
 #include <linux/delay.h>
 
+/* coLinux have a dummy implementation of pci_set_dma_mask() */
+#ifdef CONFIG_COOPERATIVE
+# define HAVE_ARCH_PCI_SET_DMA_MASK
+#endif
+
 #ifdef HAVE_REALLY_SLOW_DMA_CONTROLLER
 #define dma_outb	outb_p
 #else
@@ -287,6 +292,7 @@ static inline void set_dma_count(unsigned int dmanr, unsigned int count)
  *
  * Assumes DMA flip-flop is clear.
  */
+#ifndef CONFIG_COOPERATIVE
 static inline int get_dma_residue(unsigned int dmanr)
 {
 	unsigned int io_port;
@@ -301,6 +307,7 @@ static inline int get_dma_residue(unsigned int dmanr)
 
 	return (dmanr <= 3) ? count : (count << 1);
 }
+#endif
 
 
 /* These are in kernel/dma.c: */

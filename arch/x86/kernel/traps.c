@@ -30,6 +30,7 @@
 #include <linux/mm.h>
 #include <linux/smp.h>
 #include <linux/io.h>
+#include <linux/cooperative_internal.h>
 
 #ifdef CONFIG_EISA
 #include <linux/ioport.h>
@@ -56,6 +57,7 @@
 #include <asm/mce.h>
 
 #include <asm/mach_traps.h>
+#include <asm/cooperative_internal.h>
 
 #ifdef CONFIG_X86_64
 #include <asm/x86_init.h>
@@ -172,6 +174,10 @@ trap_signal:
 	return;
 
 kernel_trap:
+	if (cooperative_mode_enabled() && trapnr == 3) {
+		co_kernel_breakpoint(regs);
+		return;
+	}
 	if (!fixup_exception(regs)) {
 		tsk->thread.error_code = error_code;
 		tsk->thread.trap_no = trapnr;
@@ -308,6 +314,7 @@ gp_in_kernel:
 	die("general protection fault", regs, error_code);
 }
 
+#ifndef CONFIG_COOPERATIVE
 static notrace __kprobes void
 mem_parity_error(unsigned char reason, struct pt_regs *regs)
 {
@@ -431,6 +438,7 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
 	reassert_nmi();
 #endif
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 dotraplinkage notrace __kprobes void
 do_nmi(struct pt_regs *regs, long error_code)
@@ -439,8 +447,10 @@ do_nmi(struct pt_regs *regs, long error_code)
 
 	inc_irq_stat(__nmi_count);
 
+#ifndef CONFIG_COOPERATIVE
 	if (!ignore_nmis)
 		default_do_nmi(regs);
+#endif /* !CONFIG_COOPERATIVE */
 
 	nmi_exit();
 }
@@ -557,6 +567,10 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
 
 	/* Store the virtualized DR6 value */
 	tsk->thread.debugreg6 = dr6;
+
+	if (cooperative_mode_enabled() &&
+	    co_kernel_debug(regs, error_code, dr6))
+		return;
 
 	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
 							SIGTRAP) == NOTIFY_STOP)
@@ -832,6 +846,13 @@ asmlinkage void math_state_restore(void)
 	}
 
 	clts();				/* Allow maths ops (or we recurse) */
+
+#ifdef CONFIG_COOPERATIVE
+	if (!co_host_fpu_saved) {
+		CO_FPU_SAVE(co_host_fpu);
+		co_host_fpu_saved = 1;
+	}
+#endif /* CONFIG_COOPERATIVE */
 
 	__math_state_restore();
 }

@@ -70,7 +70,7 @@ extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
 			       int write_combine);
 
 
-#ifdef CONFIG_PCI
+#if defined(CONFIG_PCI) && !defined(CONFIG_COOPERATIVE)
 extern void early_quirks(void);
 static inline void pci_dma_burst_advice(struct pci_dev *pdev,
 					enum pci_dma_burst_strategy *strat,
@@ -83,12 +83,18 @@ static inline void pci_dma_burst_advice(struct pci_dev *pdev,
 static inline void early_quirks(void) { }
 #endif
 
+#ifndef CONFIG_COOPERATIVE
 extern void pci_iommu_alloc(void);
+#endif
 
 /* MSI arch hook */
 #define arch_setup_msi_irqs arch_setup_msi_irqs
 
+#ifdef CONFIG_COOPERATIVE
+#define PCI_DMA_BUS_IS_PHYS 0
+#else
 #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+#endif
 
 #if defined(CONFIG_X86_64) || defined(CONFIG_DMAR) || defined(CONFIG_DMA_API_DEBUG)
 

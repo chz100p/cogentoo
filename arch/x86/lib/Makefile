@@ -16,7 +16,11 @@ clean-files := inat-tables.c
 
 obj-$(CONFIG_SMP) += msr-smp.o cache-smp.o
 
+ifdef CONFIG_COOPERATIVE
+lib-y := delay_cooperative.o
+else
 lib-y := delay.o
+endif
 lib-y += thunk_$(BITS).o
 lib-y += usercopy_$(BITS).o getuser.o putuser.o
 lib-y += memcpy_$(BITS).o

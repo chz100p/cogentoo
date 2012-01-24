@@ -66,7 +66,9 @@ int __init pci_subsys_init(void)
 #endif
 	pci_legacy_init();
 	pcibios_fixup_peer_bridges();
+#ifndef CONFIG_COOPERATIVE
 	pcibios_irq_init();
+#endif
 	pcibios_init();
 
 	return 0;

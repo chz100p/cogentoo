@@ -102,10 +102,18 @@ static inline void flush_write_buffers(void)
 
 #endif /* __KERNEL__ */
 
+#ifdef CONFIG_COOPERATIVE
+static inline void native_io_delay(void)
+{
+	asm volatile("jmp 1f; 1: jmp 1f; 1:" : : : "memory");
+}
+static inline void io_delay_init(void) {}
+#else
 extern void native_io_delay(void);
 
 extern int io_delay_type;
 extern void io_delay_init(void);
+#endif
 
 #if defined(CONFIG_PARAVIRT)
 #include <asm/paravirt.h>

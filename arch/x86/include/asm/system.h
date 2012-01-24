@@ -6,6 +6,7 @@
 #include <asm/cpufeature.h>
 #include <asm/cmpxchg.h>
 #include <asm/nops.h>
+#include <asm/page.h>
 
 #include <linux/kernel.h>
 #include <linux/irqflags.h>
@@ -309,8 +310,22 @@ static inline void native_wbinvd(void)
 #define write_cr0(x)	(native_write_cr0(x))
 #define read_cr2()	(native_read_cr2())
 #define write_cr2(x)	(native_write_cr2(x))
+#ifdef CONFIG_COOPERATIVE
+
+static inline unsigned long read_cr3(void)
+{
+	return CO_P_TO_PP(native_read_cr3());
+}
+
+static inline void write_cr3(unsigned long val)
+{
+	native_write_cr3(CO_PP_TO_P(val));
+}
+
+#else
 #define read_cr3()	(native_read_cr3())
 #define write_cr3(x)	(native_write_cr3(x))
+#endif
 #define read_cr4()	(native_read_cr4())
 #define read_cr4_safe()	(native_read_cr4_safe())
 #define write_cr4(x)	(native_write_cr4(x))

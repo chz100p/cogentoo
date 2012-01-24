@@ -49,6 +49,7 @@
 #include <linux/debugobjects.h>
 #include <linux/kmemleak.h>
 #include <linux/memory.h>
+#include <linux/cooperative_internal.h>
 #include <trace/events/kmem.h>
 
 #include <asm/tlbflush.h>
@@ -338,6 +339,34 @@ static int destroy_compound_page(struct page *page, unsigned long order)
 	return bad;
 }
 
+#ifdef CONFIG_COOPERATIVE
+static int co_persistent_alloc_pages(unsigned long address, int size)
+{
+	int result, retries_left;
+
+	for (retries_left = 10; retries_left > 0; retries_left--) {
+		result = co_alloc_pages(address, size);
+		if (result) {
+			unsigned long cache_size;
+			/*
+			 * Whoops, we have allocated too much of the
+			 * host OS's memory, time to free some cache.
+			 */
+			cache_size = global_page_state(NR_FILE_PAGES)-total_swapcache_pages;
+			cache_size /= 2;
+			if (cache_size < size*2)
+				cache_size = size*2;
+			shrink_all_memory(cache_size);
+		} else {
+			return 0;
+		}
+	}
+
+	WARN_ON(result != 0);
+	return result;
+}
+#endif /* CONFIG_COOPERATIVE */
+
 static inline void prep_zero_page(struct page *page, int order, gfp_t gfp_flags)
 {
 	int i;
@@ -452,6 +481,11 @@ static inline void __free_one_page(struct page *page,
 		int migratetype)
 {
 	unsigned long page_idx;
+
+#ifdef CONFIG_COOPERATIVE
+	co_free_pages((unsigned long)page_address(page), 1 << order);
+	ClearPageCoHostMapped(page);
+#endif /* CONFIG_COOPERATIVE */
 
 	if (unlikely(PageCompound(page)))
 		if (unlikely(destroy_compound_page(page, order)))
@@ -691,6 +725,12 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
 		if (unlikely(check_new_page(p)))
 			return 1;
 	}
+
+#ifdef CONFIG_COOPERATIVE
+	if (!TestSetPageCoHostMapped(page))
+		if (co_persistent_alloc_pages((unsigned long)page_address(page), 1 << order))
+			return 1;
+#endif /* CONFIG_COOPERATIVE */
 
 	set_page_private(page, 0);
 	set_page_refcounted(page);
@@ -1237,6 +1277,7 @@ again:
 	VM_BUG_ON(bad_range(zone, page));
 	if (prep_new_page(page, order, gfp_flags))
 		goto again;
+
 	return page;
 
 failed:
@@ -1918,7 +1959,7 @@ nopage:
 		dump_stack();
 		show_mem();
 	}
-	return page;
+	return NULL;
 got_pg:
 	if (kmemcheck_enabled)
 		kmemcheck_pagealloc_alloc(page, order, gfp_mask);

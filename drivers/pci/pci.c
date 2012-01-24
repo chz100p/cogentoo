@@ -2111,6 +2111,7 @@ void pci_msi_off(struct pci_dev *dev)
 }
 
 #ifndef HAVE_ARCH_PCI_SET_DMA_MASK
+#error BUG1 HAVE_ARCH_PCI_SET_DMA_MASK
 /*
  * These can be overridden by arch-specific implementations
  */
@@ -2876,9 +2877,13 @@ EXPORT_SYMBOL(pci_set_mwi);
 EXPORT_SYMBOL(pci_try_set_mwi);
 EXPORT_SYMBOL(pci_clear_mwi);
 EXPORT_SYMBOL_GPL(pci_intx);
+#ifndef HAVE_ARCH_PCI_SET_DMA_MASK
 EXPORT_SYMBOL(pci_set_dma_mask);
 EXPORT_SYMBOL(pci_set_consistent_dma_mask);
+#endif
+#ifndef CONFIG_COOPERATIVE
 EXPORT_SYMBOL(pci_assign_resource);
+#endif
 EXPORT_SYMBOL(pci_find_parent_resource);
 EXPORT_SYMBOL(pci_select_bars);
 

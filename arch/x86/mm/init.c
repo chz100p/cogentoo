@@ -28,6 +28,7 @@ int direct_gbpages
 #endif
 ;
 
+#ifndef CONFIG_COOPERATIVE
 static void __init find_early_table_space(unsigned long end, int use_pse,
 					  int use_gbpages)
 {
@@ -86,6 +87,7 @@ static void __init find_early_table_space(unsigned long end, int use_pse,
 	printk(KERN_DEBUG "kernel direct mapping tables up to %lx @ %lx-%lx\n",
 		end, e820_table_start << PAGE_SHIFT, e820_table_top << PAGE_SHIFT);
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 struct map_range {
 	unsigned long start;
@@ -146,6 +148,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
 	use_gbpages = direct_gbpages;
 #endif
 
+#ifndef CONFIG_COOPERATIVE
 	/* Enable PSE if available */
 	if (cpu_has_pse)
 		set_in_cr4(X86_CR4_PSE);
@@ -160,6 +163,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
 		page_size_mask |= 1 << PG_LEVEL_1G;
 	if (use_pse)
 		page_size_mask |= 1 << PG_LEVEL_2M;
+#endif /* !CONFIG_COOPERATIVE */
 
 	memset(mr, 0, sizeof(mr));
 	nr_range = 0;
@@ -256,6 +260,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
 			(mr[i].page_size_mask & (1<<PG_LEVEL_1G))?"1G":(
 			 (mr[i].page_size_mask & (1<<PG_LEVEL_2M))?"2M":"4k"));
 
+#ifdef CONFIG_COOPERATIVE
+	ret = end;
+#else /* CONFIG_COOPERATIVE */
 	/*
 	 * Find space for the kernel direct mapping tables.
 	 *
@@ -310,6 +317,7 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
 
 	if (!after_bootmem)
 		early_memtest(start, end);
+#endif /* CONFIG_COOPERATIVE */
 
 	return ret >> PAGE_SHIFT;
 }
@@ -349,16 +357,20 @@ void free_init_pages(char *what, unsigned long begin, unsigned long end)
 	 * create a kernel page fault:
 	 */
 #ifdef CONFIG_DEBUG_PAGEALLOC
+#ifndef CONFIG_COOPERATIVE
 	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
 		begin, PAGE_ALIGN(end));
 	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
+#endif /* !CONFIG_COOPERATIVE */
 #else
 	/*
 	 * We just marked the kernel text read only above, now that
 	 * we are going to free part of that, we need to make that
 	 * writeable first.
 	 */
+#ifndef CONFIG_COOPERATIVE
 	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
+#endif /* !CONFIG_COOPERATIVE */
 
 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
 

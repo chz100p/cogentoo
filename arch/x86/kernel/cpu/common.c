@@ -818,7 +818,9 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
 	detect_ht(c);
 #endif
 
+#ifndef CONFIG_COOPERATIVE
 	init_hypervisor(c);
+#endif
 
 	/*
 	 * Clear/Set all flags overriden by options, need do it
@@ -864,7 +866,9 @@ static void vgetcpu_set_mode(void)
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
+#ifndef CONFIG_COOPERATIVE
 	init_c1e_mask();
+#endif
 #ifdef CONFIG_X86_32
 	sysenter_setup();
 	enable_sep_cpu();

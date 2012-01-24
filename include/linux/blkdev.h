@@ -1011,7 +1011,11 @@ static inline int sb_issue_discard(struct super_block *sb,
 
 extern int blk_verify_command(unsigned char *cmd, fmode_t has_write_perm);
 
+#ifdef CONFIG_COOPERATIVE
+#define MAX_PHYS_SEGMENTS 256
+#else
 #define MAX_PHYS_SEGMENTS 128
+#endif
 #define MAX_HW_SEGMENTS 128
 #define SAFE_MAX_SECTORS 255
 #define BLK_DEF_MAX_SECTORS 1024

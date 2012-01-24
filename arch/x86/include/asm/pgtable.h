@@ -124,7 +124,7 @@ static inline int pte_special(pte_t pte)
 
 static inline unsigned long pte_pfn(pte_t pte)
 {
-	return (pte_val(pte) & PTE_PFN_MASK) >> PAGE_SHIFT;
+	return CO_PFN_P_TO_PP((pte_val(pte) & PTE_PFN_MASK) >> PAGE_SHIFT);
 }
 
 static inline unsigned long pmd_pfn(pmd_t pmd)
@@ -230,13 +230,13 @@ static inline pgprotval_t massage_pgprot(pgprot_t pgprot)
 
 static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 {
-	return __pte(((phys_addr_t)page_nr << PAGE_SHIFT) |
+	return __pte(((phys_addr_t)CO_PFN_PP_TO_P(page_nr) << PAGE_SHIFT) |
 		     massage_pgprot(pgprot));
 }
 
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 {
-	return __pmd(((phys_addr_t)page_nr << PAGE_SHIFT) |
+	return __pmd(((phys_addr_t)CO_PFN_PP_TO_P(page_nr) << PAGE_SHIFT) |
 		     massage_pgprot(pgprot));
 }
 
@@ -341,14 +341,14 @@ static inline int pmd_none(pmd_t pmd)
 
 static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 {
-	return (unsigned long)__va(pmd_val(pmd) & PTE_PFN_MASK);
+	return (unsigned long)__va(CO_P_TO_PP(pmd_val(pmd)) & PTE_PFN_MASK);
 }
 
 /*
  * Currently stuck as a macro due to indirect forward reference to
  * linux/mmzone.h's __section_mem_map_addr() definition:
  */
-#define pmd_page(pmd)	pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT)
+#define pmd_page(pmd)	pfn_to_page(CO_P_TO_PP(pmd_val(pmd)) >> PAGE_SHIFT)
 
 /*
  * the pmd page can be thought of an array like this: pmd_t[PTRS_PER_PMD]
