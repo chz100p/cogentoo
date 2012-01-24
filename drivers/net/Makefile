@@ -206,6 +206,7 @@ obj-$(CONFIG_SC92031) += sc92031.o
 
 # This is also a 82596 and should probably be merged
 obj-$(CONFIG_LP486E) += lp486e.o
+obj-$(CONFIG_CONET_COOPERATIVE) += conet.o
 
 obj-$(CONFIG_ETH16I) += eth16i.o
 obj-$(CONFIG_ZORRO8390) += zorro8390.o 8390.o

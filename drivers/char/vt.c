@@ -2858,7 +2858,8 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 		vc->vc_palette[k++] = default_grn[j] ;
 		vc->vc_palette[k++] = default_blu[j] ;
 	}
-	vc->vc_def_color       = 0x07;   /* white */
+	if (!vc->vc_def_color)
+		vc->vc_def_color       = 0x07;   /* white */
 	vc->vc_ulcolor         = default_underline_color;
 	vc->vc_itcolor         = default_italic_color;
 	vc->vc_halfcolor       = 0x08;   /* grey */

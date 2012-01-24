@@ -28,6 +28,7 @@
 #include <linux/libps2.h>
 #include <linux/mutex.h>
 #include <linux/dmi.h>
+#include <linux/cooperative_internal.h>
 
 #define DRIVER_DESC	"AT and PS/2 keyboard driver"
 
@@ -680,6 +681,9 @@ static int atkbd_probe(struct atkbd *atkbd)
 	struct ps2dev *ps2dev = &atkbd->ps2dev;
 	unsigned char param[2];
 
+	if (cooperative_mode_enabled())
+		return 0;
+
 /*
  * Some systems, where the bit-twiddling when testing the io-lines of the
  * controller may confuse the keyboard need a full reset of the keyboard. On
@@ -1129,8 +1133,8 @@ static int atkbd_connect(struct serio *serio, struct serio_driver *drv)
 		}
 
 		atkbd->set = atkbd_select_set(atkbd, atkbd_set, atkbd_extra);
-		atkbd_reset_state(atkbd);
-		atkbd_activate(atkbd);
+		if (!atkbd_reset_state(atkbd))
+			atkbd_activate(atkbd);
 
 	} else {
 		atkbd->set = 2;

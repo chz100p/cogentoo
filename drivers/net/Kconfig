@@ -139,6 +139,11 @@ config VETH
 	  When one end receives the packet it appears on its pair and vice
 	  versa.
 
+config CONET_COOPERATIVE
+	bool 'Cooperative Virtual Ethernet driver support'
+	depends on COOPERATIVE
+	select MII
+
 config NET_SB1000
 	tristate "General Instruments Surfboard 1000"
 	depends on PNP
@@ -173,7 +178,7 @@ source "drivers/net/phy/Kconfig"
 
 menuconfig NET_ETHERNET
 	bool "Ethernet (10 or 100Mbit)"
-	depends on !UML
+	depends on !UML && !COOPERATIVE
 	---help---
 	  Ethernet (also called IEEE 802.3 or ISO 8802-2) is the most common
 	  type of Local Area Network (LAN) in universities and companies.
@@ -1963,7 +1968,7 @@ endif # NET_ETHERNET
 
 menuconfig NETDEV_1000
 	bool "Ethernet (1000 Mbit)"
-	depends on !UML
+	depends on !UML && !COOPERATIVE
 	default y
 	---help---
 	  Ethernet (also called IEEE 802.3 or ISO 8802-2) is the most common
@@ -2497,7 +2502,7 @@ endif # NETDEV_1000
 
 menuconfig NETDEV_10000
 	bool "Ethernet (10000 Mbit)"
-	depends on !UML
+	depends on !UML && !COOPERATIVE
 	default y
 	---help---
 	  Say Y here to get to see options for 10 Gigabit Ethernet drivers.

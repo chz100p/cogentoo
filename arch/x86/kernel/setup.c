@@ -49,6 +49,7 @@
 #include <asm/pci-direct.h>
 #include <linux/init_ohci1394_dma.h>
 #include <linux/kvm_para.h>
+#include <linux/cooperative_internal.h>
 
 #include <linux/errno.h>
 #include <linux/kernel.h>
@@ -299,8 +300,10 @@ static inline void init_gbpages(void)
 
 static void __init reserve_brk(void)
 {
+#ifndef CONFIG_COOPERATIVE
 	if (_brk_end > _brk_start)
 		reserve_early(__pa(_brk_start), __pa(_brk_end), "BRK");
+#endif
 
 	/* Mark brk area as locked down and no longer taking any
 	   new allocations */
@@ -309,6 +312,7 @@ static void __init reserve_brk(void)
 
 #ifdef CONFIG_BLK_DEV_INITRD
 
+#ifndef CONFIG_COOPERATIVE
 #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
 static void __init relocate_initrd(void)
 {
@@ -371,9 +375,20 @@ static void __init relocate_initrd(void)
 		ramdisk_image, ramdisk_image + ramdisk_size - 1,
 		ramdisk_here, ramdisk_here + ramdisk_size - 1);
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 static void __init reserve_initrd(void)
 {
+#ifdef CONFIG_COOPERATIVE
+	if (co_boot_params.co_initrd != NULL) {
+		initrd_start = (unsigned long)co_boot_params.co_initrd;
+		initrd_end = (unsigned long)co_boot_params.co_initrd + co_boot_params.co_initrd_size;
+		printk(KERN_INFO "initrd enabled: 0x%lx-0x%lx  size: 0x%08lx\n",
+		       initrd_start, initrd_end, co_boot_params.co_initrd_size);
+
+		reserve_bootmem(virt_to_phys(co_boot_params.co_initrd), co_boot_params.co_initrd_size, BOOTMEM_DEFAULT);
+	}
+#else /* CONFIG_COOPERATIVE */
 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
 	u64 ramdisk_end   = ramdisk_image + ramdisk_size;
@@ -410,6 +425,7 @@ static void __init reserve_initrd(void)
 	relocate_initrd();
 
 	free_early(ramdisk_image, ramdisk_end);
+#endif /* CONFIG_COOPERATIVE */
 }
 #else
 static void __init reserve_initrd(void)
@@ -417,6 +433,7 @@ static void __init reserve_initrd(void)
 }
 #endif /* CONFIG_BLK_DEV_INITRD */
 
+#ifndef CONFIG_COOPERATIVE
 static void __init parse_setup_data(void)
 {
 	struct setup_data *data;
@@ -482,6 +499,7 @@ static void __init reserve_early_setup_data(void)
 		early_iounmap(data, sizeof(*data));
 	}
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 /*
  * --------- Crashkernel reservation ------------------------------
@@ -549,6 +567,7 @@ static void __init reserve_crashkernel(void)
 }
 #endif
 
+#ifndef CONFIG_COOPERATIVE
 static struct resource standard_io_resources[] = {
 	{ .name = "dma1", .start = 0x00, .end = 0x1f,
 		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
@@ -581,6 +600,7 @@ void __init reserve_standard_io_resources(void)
 		request_resource(&ioport_resource, &standard_io_resources[i]);
 
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 /*
  * Note: elfcorehdr_addr is not just limited to vmcore. It is also used by
@@ -618,6 +638,7 @@ static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
 }
 #endif
 
+#ifndef CONFIG_COOPERATIVE
 /* List of systems that have known low memory corruption BIOS problems */
 static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
 #ifdef CONFIG_X86_RESERVE_LOW_64K
@@ -677,6 +698,7 @@ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
 #endif
 	{}
 };
+#endif /* !CONFIG_COOPERATIVE */
 
 /*
  * Determine if we were loaded by an EFI loader.  If so, then we have also been
@@ -751,10 +773,12 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.oem.arch_setup();
 
+#ifndef CONFIG_COOPERATIVE
 	setup_memory_map();
 	parse_setup_data();
 	/* update the e820_saved too */
 	e820_reserve_setup_data();
+#endif /* !CONFIG_COOPERATIVE */
 
 	copy_edd();
 
@@ -772,6 +796,9 @@ void __init setup_arch(char **cmdline_p)
 	bss_resource.start = virt_to_phys(&__bss_start);
 	bss_resource.end = virt_to_phys(&__bss_stop)-1;
 
+#ifdef CONFIG_COOPERATIVE
+	strlcpy(boot_command_line, co_boot_params.co_boot_parameters, COMMAND_LINE_SIZE);
+#endif
 #ifdef CONFIG_CMDLINE_BOOL
 #ifdef CONFIG_CMDLINE_OVERRIDE
 	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
@@ -804,8 +831,10 @@ void __init setup_arch(char **cmdline_p)
 	/* Must be before kernel pagetables are setup */
 	vmi_activate();
 
+#ifndef CONFIG_COOPERATIVE
 	/* after early param, so could get panic from serial */
 	reserve_early_setup_data();
+#endif /* !CONFIG_COOPERATIVE */
 
 	if (acpi_mps_check()) {
 #ifdef CONFIG_X86_LOCAL_APIC
@@ -814,16 +843,19 @@ void __init setup_arch(char **cmdline_p)
 		setup_clear_cpu_cap(X86_FEATURE_APIC);
 	}
 
+#ifndef CONFIG_COOPERATIVE
 #ifdef CONFIG_PCI
 	if (pci_early_dump_regs)
 		early_dump_pci_devices();
 #endif
 
 	finish_e820_parsing();
+#endif /* !CONFIG_COOPERATIVE */
 
 	if (efi_enabled)
 		efi_init();
 
+#ifndef CONFIG_COOPERATIVE
 	dmi_scan_machine();
 
 	dmi_check_system(bad_bios_dmi_table);
@@ -835,13 +867,16 @@ void __init setup_arch(char **cmdline_p)
 	init_hypervisor_platform();
 
 	x86_init.resources.probe_roms();
+#endif /* !CONFIG_COOPERATIVE */
 
 	/* after parse_early_param, so could debug it */
 	insert_resource(&iomem_resource, &code_resource);
 	insert_resource(&iomem_resource, &data_resource);
 	insert_resource(&iomem_resource, &bss_resource);
 
-
+#ifdef CONFIG_COOPERATIVE
+	max_pfn = co_boot_params.co_memory_size >> PAGE_SHIFT;
+#else /* CONFIG_COOPERATIVE */
 #ifdef CONFIG_X86_32
 	if (ppro_with_ram_bug()) {
 		e820_update_range(0x70000000ULL, 0x40000ULL, E820_RAM,
@@ -866,6 +901,7 @@ void __init setup_arch(char **cmdline_p)
 	mtrr_bp_init();
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820_end_of_ram_pfn();
+#endif /* CONFIG_COOPERATIVE */
 
 #ifdef CONFIG_X86_32
 	/* max_low_pfn get updated here */
@@ -933,8 +969,6 @@ void __init setup_arch(char **cmdline_p)
 		init_ohci1394_dma_on_all_controllers();
 #endif
 
-	reserve_initrd();
-
 	reserve_crashkernel();
 
 	vsmp_init();
@@ -961,6 +995,7 @@ void __init setup_arch(char **cmdline_p)
 #endif
 
 	initmem_init(0, max_pfn, acpi, k8);
+	reserve_initrd();
 
 #ifdef CONFIG_X86_64
 	/*
@@ -1018,15 +1053,21 @@ void __init setup_arch(char **cmdline_p)
 
 	kvm_guest_init();
 
+#ifndef CONFIG_COOPERATIVE
 	e820_reserve_resources();
 	e820_mark_nosave_regions(max_low_pfn);
+#endif /* !CONFIG_COOPERATIVE */
 
 	x86_init.resources.reserve_resources();
 
+#ifndef CONFIG_COOPERATIVE
 	e820_setup_gap();
+#endif /* !CONFIG_COOPERATIVE */
 
 #ifdef CONFIG_VT
-#if defined(CONFIG_VGA_CONSOLE)
+#ifdef CONFIG_COOPERATIVE_CONSOLE
+	conswitchp = &colinux_con;
+#elif defined(CONFIG_VGA_CONSOLE)
 	if (!efi_enabled || (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
 		conswitchp = &vga_con;
 #elif defined(CONFIG_DUMMY_CONSOLE)
@@ -1040,6 +1081,7 @@ void __init setup_arch(char **cmdline_p)
 
 #ifdef CONFIG_X86_32
 
+#ifndef CONFIG_COOPERATIVE
 static struct resource video_ram_resource = {
 	.name	= "Video RAM area",
 	.start	= 0xa0000,
@@ -1052,5 +1094,6 @@ void __init i386_reserve_resources(void)
 	request_resource(&iomem_resource, &video_ram_resource);
 	reserve_standard_io_resources();
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 #endif /* CONFIG_X86_32 */

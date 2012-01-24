@@ -101,6 +101,7 @@ SECTIONS
 #endif
 		. = ALIGN(8);
 		_stext = .;
+		_kernel_start = .;		/* coLinux kernel entry */
 		TEXT_TEXT
 		SCHED_TEXT
 		LOCK_TEXT

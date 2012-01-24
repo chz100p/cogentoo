@@ -25,6 +25,7 @@
 #else
 #include <asm/vsyscall.h>
 #endif
+#include <asm/cooperative.h>
 
 /*
  * We can't declare FIXADDR_TOP as variable for x86_64 because vsyscall

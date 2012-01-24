@@ -25,6 +25,8 @@ static int __init no_halt(char *s)
 
 __setup("no-hlt", no_halt);
 
+// Ignore, if have no emulation compiled in
+#ifdef CONFIG_MATH_EMULATION
 static int __init no_387(char *s)
 {
 	boot_cpu_data.hard_math = 0;
@@ -33,6 +35,7 @@ static int __init no_387(char *s)
 }
 
 __setup("no387", no_387);
+#endif
 
 static double __initdata x = 4195835.0;
 static double __initdata y = 3145727.0;

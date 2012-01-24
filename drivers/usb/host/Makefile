@@ -16,7 +16,9 @@ xhci-objs := xhci-hcd.o xhci-mem.o xhci-pci.o xhci-ring.o xhci-hub.o xhci-dbg.o
 
 obj-$(CONFIG_USB_WHCI_HCD)	+= whci/
 
+ifndef CONFIG_COOPERATIVE
 obj-$(CONFIG_PCI)		+= pci-quirks.o
+endif
 
 obj-$(CONFIG_USB_EHCI_HCD)	+= ehci-hcd.o
 obj-$(CONFIG_USB_OXU210HP_HCD)	+= oxu210hp-hcd.o

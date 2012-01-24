@@ -23,6 +23,7 @@
 #include <linux/init.h>
 #include <linux/nmi.h>
 #include <linux/dmi.h>
+#include <linux/cooperative_internal.h>
 
 int panic_on_oops;
 static unsigned long tainted_mask;
@@ -68,7 +69,7 @@ NORET_TYPE void panic(const char * fmt, ...)
 
 	bust_spinlocks(1);
 	va_start(args, fmt);
-	vsnprintf(buf, sizeof(buf), fmt, args);
+	i = vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
 	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
 #ifdef CONFIG_DEBUG_BUGVERBOSE
@@ -83,6 +84,9 @@ NORET_TYPE void panic(const char * fmt, ...)
 	crash_kexec(NULL);
 
 	kmsg_dump(KMSG_DUMP_PANIC);
+
+	if (cooperative_mode_enabled())
+		co_terminate_panic(buf, i);
 
 	/*
 	 * Note smp_send_stop is the usual smp shutdown function, which

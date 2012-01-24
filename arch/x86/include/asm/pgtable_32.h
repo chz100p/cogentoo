@@ -17,6 +17,7 @@
 #include <asm/fixmap.h>
 #include <linux/threads.h>
 #include <asm/paravirt.h>
+#include <asm/cooperative.h>
 
 #include <linux/bitops.h>
 #include <linux/slab.h>

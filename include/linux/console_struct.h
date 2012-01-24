@@ -130,7 +130,11 @@ extern void vc_SAK(struct work_struct *work);
 #define CUR_HWMASK	0x0f
 #define CUR_SWMASK	0xfff0
 
-#define CUR_DEFAULT CUR_UNDERLINE
+#ifdef CONFIG_COOPERATIVE
+# define CUR_DEFAULT CUR_DEF
+#else
+# define CUR_DEFAULT CUR_UNDERLINE
+#endif
 
 #define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
 

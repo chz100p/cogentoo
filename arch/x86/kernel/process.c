@@ -12,6 +12,7 @@
 #include <linux/user-return-notifier.h>
 #include <linux/dmi.h>
 #include <linux/utsname.h>
+#include <linux/cooperative_internal.h>
 #include <trace/events/power.h>
 #include <linux/hw_breakpoint.h>
 #include <asm/system.h>
@@ -357,6 +358,12 @@ static inline int hlt_use_halt(void)
 }
 #endif
 
+#ifdef CONFIG_COOPERATIVE
+void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+{
+	pm_idle = co_idle_processor;
+}
+#else /* CONFIG_COOPERATIVE */
 /*
  * We use this if we don't have any better
  * idle routine..
@@ -682,6 +689,7 @@ static int __init idle_setup(char *str)
 	return 0;
 }
 early_param("idle", idle_setup);
+#endif /* CONFIG_COOPERATIVE */
 
 unsigned long arch_align_stack(unsigned long sp)
 {

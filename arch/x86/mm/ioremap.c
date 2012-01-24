@@ -13,6 +13,7 @@
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <linux/mmiotrace.h>
+#include <linux/cooperative_internal.h>
 
 #include <asm/cacheflush.h>
 #include <asm/e820.h>
@@ -26,8 +27,10 @@
 
 int page_is_ram(unsigned long pagenr)
 {
+#ifndef CONFIG_COOPERATIVE
 	resource_size_t addr, end;
 	int i;
+#endif
 
 	/*
 	 * A special case is the first 4Kb of memory;
@@ -45,6 +48,7 @@ int page_is_ram(unsigned long pagenr)
 		    pagenr < (BIOS_END >> PAGE_SHIFT))
 		return 0;
 
+#ifndef CONFIG_COOPERATIVE
 	for (i = 0; i < e820.nr_map; i++) {
 		/*
 		 * Not usable memory:
@@ -58,6 +62,7 @@ int page_is_ram(unsigned long pagenr)
 		if ((pagenr >= addr) && (pagenr < end))
 			return 1;
 	}
+#endif /* !CONFIG_COOPERATIVE */
 	return 0;
 }
 
@@ -87,6 +92,7 @@ int ioremap_change_attr(unsigned long vaddr, unsigned long size,
 	return err;
 }
 
+#ifndef CONFIG_COOPERATIVE
 /*
  * Remap an arbitrary physical address space into the kernel virtual
  * address space. Needed when the kernel wants to access high addresses
@@ -216,6 +222,7 @@ err_free_memtype:
 	free_memtype(phys_addr, phys_addr + size);
 	return NULL;
 }
+#endif /* !CONFIG_COOPERATIVE */
 
 /**
  * ioremap_nocache     -   map bus memory into CPU space
@@ -240,6 +247,11 @@ err_free_memtype:
  */
 void __iomem *ioremap_nocache(resource_size_t phys_addr, unsigned long size)
 {
+#ifdef CONFIG_COOPERATIVE
+	panic("ioremap_nocache %zu:%lu\n", phys_addr, size);
+	return NULL;
+#else /* CONFIG_COOPERATIVE */
+
 	/*
 	 * Ideally, this should be:
 	 *	pat_enabled ? _PAGE_CACHE_UC : _PAGE_CACHE_UC_MINUS;
@@ -251,6 +263,7 @@ void __iomem *ioremap_nocache(resource_size_t phys_addr, unsigned long size)
 
 	return __ioremap_caller(phys_addr, size, val,
 				__builtin_return_address(0));
+#endif /* CONFIG_COOPERATIVE */
 }
 EXPORT_SYMBOL(ioremap_nocache);
 
@@ -266,26 +279,41 @@ EXPORT_SYMBOL(ioremap_nocache);
  */
 void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
 {
+#ifdef CONFIG_COOPERATIVE
+	panic("ioremap_wc %zu:%lu\n", phys_addr, size);
+	return NULL;
+#else /* CONFIG_COOPERATIVE */
 	if (pat_enabled)
 		return __ioremap_caller(phys_addr, size, _PAGE_CACHE_WC,
 					__builtin_return_address(0));
 	else
 		return ioremap_nocache(phys_addr, size);
+#endif /* CONFIG_COOPERATIVE */
 }
 EXPORT_SYMBOL(ioremap_wc);
 
 void __iomem *ioremap_cache(resource_size_t phys_addr, unsigned long size)
 {
+#ifdef CONFIG_COOPERATIVE
+	panic("ioremap_cache %zu:%lu\n", phys_addr, size);
+	return NULL;
+#else /* CONFIG_COOPERATIVE */
 	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_WB,
 				__builtin_return_address(0));
+#endif /* CONFIG_COOPERATIVE */
 }
 EXPORT_SYMBOL(ioremap_cache);
 
 void __iomem *ioremap_prot(resource_size_t phys_addr, unsigned long size,
 				unsigned long prot_val)
 {
+#ifdef CONFIG_COOPERATIVE
+	panic("ioremap_prot %zu:%lu\n", phys_addr, size);
+	return NULL;
+#else /* CONFIG_COOPERATIVE */
 	return __ioremap_caller(phys_addr, size, (prot_val & _PAGE_CACHE_MASK),
 				__builtin_return_address(0));
+#endif /* CONFIG_COOPERATIVE */
 }
 EXPORT_SYMBOL(ioremap_prot);
 

@@ -2332,7 +2332,7 @@ unsigned long zone_reclaimable_pages(struct zone *zone)
 	return nr;
 }
 
-#ifdef CONFIG_HIBERNATION
+#if defined(CONFIG_HIBERNATION) || defined(CONFIG_COOPERATIVE)
 /*
  * Try to free `nr_to_reclaim' of memory, system-wide, and return the number of
  * freed pages.

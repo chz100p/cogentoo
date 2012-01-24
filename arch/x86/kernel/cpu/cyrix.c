@@ -254,6 +254,7 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
 
 	case 4: /* MediaGX/GXm or Geode GXM/GXLV/GX1 */
 #ifdef CONFIG_PCI
+#ifndef CONFIG_COOPERATIVE
 	{
 		u32 vendor, device;
 		/*
@@ -286,6 +287,7 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
 					device == PCI_DEVICE_ID_CYRIX_5520))
 			mark_tsc_unstable("cyrix 5510/5520 detected");
 	}
+#endif
 #endif
 		c->x86_cache_size = 16;	/* Yep 16K integrated cache thats it */
 

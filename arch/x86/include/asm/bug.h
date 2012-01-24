@@ -4,6 +4,10 @@
 #ifdef CONFIG_BUG
 #define HAVE_ARCH_BUG
 
+#ifdef CONFIG_COOPERATIVE
+extern void co_terminate_bug(int code, int line, const char *file);
+#define BUG() do { co_terminate_bug(0, __LINE__, __FILE__); } while(0)
+#else /* CONFIG_COOPERATIVE */
 #ifdef CONFIG_DEBUG_BUGVERBOSE
 
 #ifdef CONFIG_X86_32
@@ -34,6 +38,7 @@ do {								\
 #endif
 
 #endif /* !CONFIG_BUG */
+#endif /* CONFIG_COOPERATIVE */
 
 #include <asm-generic/bug.h>
 #endif /* _ASM_X86_BUG_H */

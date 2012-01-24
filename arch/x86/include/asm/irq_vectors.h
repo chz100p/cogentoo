@@ -67,6 +67,18 @@
 #define IRQ14_VECTOR			(IRQ0_VECTOR + 14)
 #define IRQ15_VECTOR			(IRQ0_VECTOR + 15)
 
+#ifdef CONFIG_COOPERATIVE
+#define TIMER_IRQ 0
+#define KEYBOARD_IRQ 1
+#define SERIAL_IRQ 3
+#define SOUND_IRQ 5
+#define POWER_IRQ 9
+#define NETWORK_IRQ 10
+#define SCSI_IRQ 11
+#define MOUSE_IRQ 12
+#define BLOCKDEV_IRQ 15
+#endif
+
 /*
  * Special IRQ vectors used by the SMP architecture, 0xf0-0xff
  *
@@ -157,7 +169,9 @@ static inline int invalid_vm86_irq(int irq)
 #define CPU_VECTOR_LIMIT		(  8 * NR_CPUS      )
 #define IO_APIC_VECTOR_LIMIT		( 32 * MAX_IO_APICS )
 
-#ifdef CONFIG_X86_IO_APIC
+#ifdef CONFIG_COOPERATIVE
+# define NR_IRQS			(NR_VECTORS - FIRST_EXTERNAL_VECTOR)
+#elif defined(CONFIG_X86_IO_APIC)
 # ifdef CONFIG_SPARSE_IRQ
 #  define NR_IRQS					\
 	(CPU_VECTOR_LIMIT > IO_APIC_VECTOR_LIMIT ?	\

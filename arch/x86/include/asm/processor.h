@@ -243,6 +243,7 @@ struct x86_hw_tss {
 } __attribute__((packed)) ____cacheline_aligned;
 #endif
 
+#ifdef __KERNEL__
 /*
  * IO-bitmap sizes:
  */
@@ -677,6 +678,7 @@ static inline unsigned int cpuid_eax(unsigned int op)
 
 	return eax;
 }
+#endif /* __KERNEL__ */
 
 static inline unsigned int cpuid_ebx(unsigned int op)
 {

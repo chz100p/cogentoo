@@ -7,6 +7,7 @@
 #define _ASM_X86_MMZONE_32_H
 
 #include <asm/smp.h>
+#include <asm/cooperative.h>
 
 #ifdef CONFIG_NUMA
 extern struct pglist_data *node_data[];

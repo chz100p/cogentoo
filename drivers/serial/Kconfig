@@ -1491,3 +1491,15 @@ config SERIAL_GRLIB_GAISLER_APBUART_CONSOLE
 	Support for running a console on the GRLIB APBUART
 
 endmenu
+
+config SERIAL_COOPERATIVE
+	bool "coLinux serial device support"
+	depends on COOPERATIVE
+	default y
+	help
+	  Say Y, if you have colinux
+
+config SERIAL_COOPERATIVE_CONSOLE
+	bool "coLinux serial console support"
+	depends on SERIAL_COOPERATIVE=y
+	select SERIAL_CORE_CONSOLE

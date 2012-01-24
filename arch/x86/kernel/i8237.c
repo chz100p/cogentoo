@@ -23,6 +23,7 @@
 
 static int i8237A_resume(struct sys_device *dev)
 {
+#ifndef CONFIG_COOPERATIVE
 	unsigned long flags;
 	int i;
 
@@ -41,6 +42,7 @@ static int i8237A_resume(struct sys_device *dev)
 	enable_dma(4);
 
 	release_dma_lock(flags);
+#endif
 
 	return 0;
 }

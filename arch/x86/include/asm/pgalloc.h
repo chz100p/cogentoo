@@ -4,6 +4,7 @@
 #include <linux/threads.h>
 #include <linux/mm.h>		/* for struct page */
 #include <linux/pagemap.h>
+#include <asm/cooperative.h>
 
 static inline int  __paravirt_pgd_alloc(struct mm_struct *mm) { return 0; }
 
@@ -63,7 +64,7 @@ static inline void pmd_populate_kernel(struct mm_struct *mm,
 				       pmd_t *pmd, pte_t *pte)
 {
 	paravirt_alloc_pte(mm, __pa(pte) >> PAGE_SHIFT);
-	set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
+	set_pmd(pmd, __pmd(CO_PP_TO_P(__pa(pte)) | _PAGE_TABLE));
 }
 
 static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
@@ -72,7 +73,7 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
 	unsigned long pfn = page_to_pfn(pte);
 
 	paravirt_alloc_pte(mm, pfn);
-	set_pmd(pmd, __pmd(((pteval_t)pfn << PAGE_SHIFT) | _PAGE_TABLE));
+	set_pmd(pmd, __pmd(((pteval_t)CO_PFN_PP_TO_P(pfn) << PAGE_SHIFT) | _PAGE_TABLE));
 }
 
 #define pmd_pgtable(pmd) pmd_page(pmd)

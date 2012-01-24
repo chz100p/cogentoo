@@ -312,7 +312,11 @@ include $(srctree)/scripts/Kbuild.include
 
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
+ifeq ($(GCCTRACE),Y)
+CC              = $(COLINUX_ROOT)/bin/tracewrapper.py $(CROSS_COMPILE)gcc
+else
 CC		= $(CROSS_COMPILE)gcc
+endif
 CPP		= $(CC) -E
 AR		= $(CROSS_COMPILE)ar
 NM		= $(CROSS_COMPILE)nm

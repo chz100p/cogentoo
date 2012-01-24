@@ -864,7 +864,11 @@ common_interrupt:
 	SAVE_ALL
 	TRACE_IRQS_OFF
 	movl %esp,%eax
+#ifdef CONFIG_COOPERATIVE
+	call proxy_interrupt_handler
+#else
 	call do_IRQ
+#endif
 	jmp ret_from_intr
 ENDPROC(common_interrupt)
 	CFI_ENDPROC
@@ -917,6 +921,9 @@ ENTRY(device_not_available)
 	CFI_ADJUST_CFA_OFFSET 4
 	pushl $do_device_not_available
 	CFI_ADJUST_CFA_OFFSET 4
+#if defined(CONFIG_COOPERATIVE)
+	DISABLE_INTERRUPTS(CLBR_NONE)	# FIXME: Need we this realy?
+#endif
 	jmp error_code
 	CFI_ENDPROC
 END(device_not_available)

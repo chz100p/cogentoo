@@ -167,7 +167,12 @@ extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size,
  */
 static inline void __iomem *ioremap(resource_size_t offset, unsigned long size)
 {
+#ifdef CONFIG_COOPERATIVE
+	panic("ioremap %ld:%ld\n", (long)offset, size);
+	return NULL;
+#else
 	return ioremap_nocache(offset, size);
+#endif
 }
 
 extern void iounmap(volatile void __iomem *addr);

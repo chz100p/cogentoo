@@ -262,6 +262,7 @@ config SCSI_WAIT_SCAN
 	default m
 	depends on SCSI
 	depends on MODULES
+	depends on !COOPERATIVE
 # scsi_wait_scan is a loadable module which waits until all the async scans are
 # complete.  The idea is to use it in initrd/ initramfs scripts.  You modprobe
 # it after all the modprobes of the root SCSI drivers and it will wait until
@@ -339,6 +340,12 @@ menuconfig SCSI_LOWLEVEL
 	default y
 
 if SCSI_LOWLEVEL && SCSI
+
+config SCSI_COOPERATIVE
+	bool "Cooperative Linux support"
+	depends on COOPERATIVE
+	help
+	  SCSI Driver for Cooperative Linux
 
 config ISCSI_TCP
 	tristate "iSCSI Initiator over TCP/IP"

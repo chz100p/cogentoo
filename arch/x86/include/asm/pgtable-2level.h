@@ -1,6 +1,8 @@
 #ifndef _ASM_X86_PGTABLE_2LEVEL_H
 #define _ASM_X86_PGTABLE_2LEVEL_H
 
+#include <asm/cooperative.h>
+
 #define pte_ERROR(e) \
 	printk("%s:%d: bad pte %08lx.\n", __FILE__, __LINE__, (e).pte_low)
 #define pgd_ERROR(e) \

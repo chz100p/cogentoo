@@ -113,7 +113,12 @@ notrace static inline int native_write_msr_safe(unsigned int msr,
 	return err;
 }
 
+#ifdef CONFIG_COOPERATIVE
+/* FIXME: */
+#define native_read_tsc() 0
+#else
 extern unsigned long long native_read_tsc(void);
+#endif
 
 extern int native_rdmsr_safe_regs(u32 regs[8]);
 extern int native_wrmsr_safe_regs(u32 regs[8]);

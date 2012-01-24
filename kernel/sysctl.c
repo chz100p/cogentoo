@@ -105,7 +105,7 @@ static int __maybe_unused one = 1;
 static int __maybe_unused two = 2;
 static unsigned long one_ul = 1;
 static int one_hundred = 100;
-#ifdef CONFIG_PRINTK
+#if defined(CONFIG_PRINTK) && !defined(CONFIG_COOPERATIVE)
 static int ten_thousand = 10000;
 #endif
 
@@ -675,6 +675,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#ifndef CONFIG_COOPERATIVE
 	{
 		.procname	= "printk_delay",
 		.data		= &printk_delay_msec,
@@ -684,6 +685,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &ten_thousand,
 	},
+#endif /* !CONFIG_COOPERATIVE */
 #endif
 	{
 		.procname	= "ngroups_max",
@@ -744,6 +746,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#ifndef CONFIG_COOPERATIVE
 	{
 		.procname	= "io_delay_type",
 		.data		= &io_delay_type,
@@ -751,6 +754,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#endif /* !CONFIG_COOPERATIVE */
 #endif
 #if defined(CONFIG_MMU)
 	{

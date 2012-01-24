@@ -51,6 +51,8 @@ void asmlinkage __attribute__((weak)) early_printk(const char *fmt, ...)
 {
 }
 
+#include <linux/cooperative_internal.h>
+
 #define __LOG_BUF_LEN	(1 << CONFIG_LOG_BUF_SHIFT)
 
 /* printk's without a loglevel use this.. */
@@ -739,6 +741,8 @@ asmlinkage int vprintk(const char *fmt, va_list args)
 			}
 		}
 	}
+
+	co_printk(printk_buf, printed_len);
 
 	/*
 	 * Copy the output into log_buf.  If the caller didn't provide
