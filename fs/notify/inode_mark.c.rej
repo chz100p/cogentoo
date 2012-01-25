@@ -1,0 +1,80 @@
+***************
+*** 106,112 ****
+  	if (atomic_dec_and_test(&entry->refcnt))
+  		entry->free_mark(entry);
+  }
+- EXPORT_SYMBOL(fsnotify_put_mark);
+  
+  /*
+   * Recalculate the mask of events relevant to a given inode locked.
+--- 106,111 ----
+  	if (atomic_dec_and_test(&entry->refcnt))
+  		entry->free_mark(entry);
+  }
+  
+  /*
+   * Recalculate the mask of events relevant to a given inode locked.
+***************
+*** 217,223 ****
+  	if (unlikely(atomic_dec_and_test(&group->num_marks)))
+  		fsnotify_final_destroy_group(group);
+  }
+- EXPORT_SYMBOL(fsnotify_destroy_mark_by_entry);
+  
+  /*
+   * Given a group, destroy all of the marks associated with that group.
+--- 216,221 ----
+  	if (unlikely(atomic_dec_and_test(&group->num_marks)))
+  		fsnotify_final_destroy_group(group);
+  }
+  
+  /*
+   * Given a group, destroy all of the marks associated with that group.
+***************
+*** 284,290 ****
+  	}
+  	return NULL;
+  }
+- EXPORT_SYMBOL(fsnotify_find_mark_entry);
+  
+  /*
+   * Nothing fancy, just initialize lists and locks and counters.
+--- 282,287 ----
+  	}
+  	return NULL;
+  }
+  
+  /*
+   * Nothing fancy, just initialize lists and locks and counters.
+***************
+*** 301,307 ****
+  	entry->inode = NULL;
+  	entry->free_mark = free_mark;
+  }
+- EXPORT_SYMBOL(fsnotify_init_mark);
+  
+  /*
+   * Attach an initialized mark entry to a given group and inode.
+--- 298,303 ----
+  	entry->inode = NULL;
+  	entry->free_mark = free_mark;
+  }
+  
+  /*
+   * Attach an initialized mark entry to a given group and inode.
+***************
+*** 357,363 ****
+  
+  	return ret;
+  }
+- EXPORT_SYMBOL(fsnotify_add_mark);
+  
+  /**
+   * fsnotify_unmount_inodes - an sb is unmounting.  handle any watched inodes.
+--- 353,358 ----
+  
+  	return ret;
+  }
+  
+  /**
+   * fsnotify_unmount_inodes - an sb is unmounting.  handle any watched inodes.

@@ -1,0 +1,42 @@
+***************
+*** 22,28 ****
+  #include <linux/srcu.h>
+  #include <linux/rculist.h>
+  #include <linux/wait.h>
+- #include <linux/module.h>
+  
+  #include <linux/fsnotify_backend.h>
+  #include "fsnotify.h"
+--- 22,27 ----
+  #include <linux/srcu.h>
+  #include <linux/rculist.h>
+  #include <linux/wait.h>
+  
+  #include <linux/fsnotify_backend.h>
+  #include "fsnotify.h"
+***************
+*** 170,176 ****
+  	fsnotify_recalc_global_mask();
+  	fsnotify_destroy_group(group);
+  }
+- EXPORT_SYMBOL(fsnotify_put_group);
+  
+  /*
+   * Simply run the fsnotify_groups list and find a group which matches
+--- 169,174 ----
+  	fsnotify_recalc_global_mask();
+  	fsnotify_destroy_group(group);
+  }
+  
+  /*
+   * Simply run the fsnotify_groups list and find a group which matches
+***************
+*** 254,257 ****
+  
+  	return group;
+  }
+- EXPORT_SYMBOL(fsnotify_obtain_group);
+--- 252,254 ----
+  
+  	return group;
+  }

@@ -1,0 +1,16 @@
+***************
+*** 226,232 ****
+  	mutex_unlock(&dentry->d_inode->i_mutex);
+  	return ret;
+  }
+- EXPORT_SYMBOL(do_truncate);
+  
+  static long do_sys_truncate(const char __user *pathname, loff_t length)
+  {
+--- 226,231 ----
+  	mutex_unlock(&dentry->d_inode->i_mutex);
+  	return ret;
+  }
+  
+  static long do_sys_truncate(const char __user *pathname, loff_t length)
+  {

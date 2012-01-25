@@ -1,0 +1,208 @@
+***************
+*** 404,410 ****
+  		return 0;
+  	return security_ops->path_mkdir(path, dentry, mode);
+  }
+- EXPORT_SYMBOL(security_path_mkdir);
+  
+  int security_path_rmdir(struct path *path, struct dentry *dentry)
+  {
+--- 404,409 ----
+  		return 0;
+  	return security_ops->path_mkdir(path, dentry, mode);
+  }
+  
+  int security_path_rmdir(struct path *path, struct dentry *dentry)
+  {
+***************
+*** 412,418 ****
+  		return 0;
+  	return security_ops->path_rmdir(path, dentry);
+  }
+- EXPORT_SYMBOL(security_path_rmdir);
+  
+  int security_path_unlink(struct path *path, struct dentry *dentry)
+  {
+--- 411,416 ----
+  		return 0;
+  	return security_ops->path_rmdir(path, dentry);
+  }
+  
+  int security_path_unlink(struct path *path, struct dentry *dentry)
+  {
+***************
+*** 420,426 ****
+  		return 0;
+  	return security_ops->path_unlink(path, dentry);
+  }
+- EXPORT_SYMBOL(security_path_unlink);
+  
+  int security_path_symlink(struct path *path, struct dentry *dentry,
+  			  const char *old_name)
+--- 418,423 ----
+  		return 0;
+  	return security_ops->path_unlink(path, dentry);
+  }
+  
+  int security_path_symlink(struct path *path, struct dentry *dentry,
+  			  const char *old_name)
+***************
+*** 429,435 ****
+  		return 0;
+  	return security_ops->path_symlink(path, dentry, old_name);
+  }
+- EXPORT_SYMBOL(security_path_symlink);
+  
+  int security_path_link(struct dentry *old_dentry, struct path *new_dir,
+  		       struct dentry *new_dentry)
+--- 426,431 ----
+  		return 0;
+  	return security_ops->path_symlink(path, dentry, old_name);
+  }
+  
+  int security_path_link(struct dentry *old_dentry, struct path *new_dir,
+  		       struct dentry *new_dentry)
+***************
+*** 438,444 ****
+  		return 0;
+  	return security_ops->path_link(old_dentry, new_dir, new_dentry);
+  }
+- EXPORT_SYMBOL(security_path_link);
+  
+  int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
+  			 struct path *new_dir, struct dentry *new_dentry)
+--- 434,439 ----
+  		return 0;
+  	return security_ops->path_link(old_dentry, new_dir, new_dentry);
+  }
+  
+  int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
+  			 struct path *new_dir, struct dentry *new_dentry)
+***************
+*** 449,455 ****
+  	return security_ops->path_rename(old_dir, old_dentry, new_dir,
+  					 new_dentry);
+  }
+- EXPORT_SYMBOL(security_path_rename);
+  
+  int security_path_truncate(struct path *path, loff_t length,
+  			   unsigned int time_attrs)
+--- 444,449 ----
+  	return security_ops->path_rename(old_dir, old_dentry, new_dir,
+  					 new_dentry);
+  }
+  
+  int security_path_truncate(struct path *path, loff_t length,
+  			   unsigned int time_attrs)
+***************
+*** 458,464 ****
+  		return 0;
+  	return security_ops->path_truncate(path, length, time_attrs);
+  }
+- EXPORT_SYMBOL(security_path_truncate);
+  
+  int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
+  			mode_t mode)
+--- 452,457 ----
+  		return 0;
+  	return security_ops->path_truncate(path, length, time_attrs);
+  }
+  
+  int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
+  			mode_t mode)
+***************
+*** 467,473 ****
+  		return 0;
+  	return security_ops->path_chmod(dentry, mnt, mode);
+  }
+- EXPORT_SYMBOL(security_path_chmod);
+  
+  int security_path_chown(struct path *path, uid_t uid, gid_t gid)
+  {
+--- 460,465 ----
+  		return 0;
+  	return security_ops->path_chmod(dentry, mnt, mode);
+  }
+  
+  int security_path_chown(struct path *path, uid_t uid, gid_t gid)
+  {
+***************
+*** 475,481 ****
+  		return 0;
+  	return security_ops->path_chown(path, uid, gid);
+  }
+- EXPORT_SYMBOL(security_path_chown);
+  
+  int security_path_chroot(struct path *path)
+  {
+--- 467,472 ----
+  		return 0;
+  	return security_ops->path_chown(path, uid, gid);
+  }
+  
+  int security_path_chroot(struct path *path)
+  {
+***************
+*** 552,558 ****
+  		return 0;
+  	return security_ops->inode_readlink(dentry);
+  }
+- EXPORT_SYMBOL(security_inode_readlink);
+  
+  int security_inode_follow_link(struct dentry *dentry, struct nameidata *nd)
+  {
+--- 543,548 ----
+  		return 0;
+  	return security_ops->inode_readlink(dentry);
+  }
+  
+  int security_inode_follow_link(struct dentry *dentry, struct nameidata *nd)
+  {
+***************
+*** 567,573 ****
+  		return 0;
+  	return security_ops->inode_permission(inode, mask);
+  }
+- EXPORT_SYMBOL(security_inode_permission);
+  
+  int security_inode_setattr(struct dentry *dentry, struct iattr *attr)
+  {
+--- 557,562 ----
+  		return 0;
+  	return security_ops->inode_permission(inode, mask);
+  }
+  
+  int security_inode_setattr(struct dentry *dentry, struct iattr *attr)
+  {
+***************
+*** 668,674 ****
+  {
+  	return security_ops->file_permission(file, mask);
+  }
+- EXPORT_SYMBOL(security_file_permission);
+  
+  int security_file_alloc(struct file *file)
+  {
+--- 657,662 ----
+  {
+  	return security_ops->file_permission(file, mask);
+  }
+  
+  int security_file_alloc(struct file *file)
+  {
+***************
+*** 696,702 ****
+  		return ret;
+  	return ima_file_mmap(file, prot);
+  }
+- EXPORT_SYMBOL(security_file_mmap);
+  
+  int security_file_mprotect(struct vm_area_struct *vma, unsigned long reqprot,
+  			    unsigned long prot)
+--- 684,689 ----
+  		return ret;
+  	return ima_file_mmap(file, prot);
+  }
+  
+  int security_file_mprotect(struct vm_area_struct *vma, unsigned long reqprot,
+  			    unsigned long prot)

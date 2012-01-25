@@ -1,0 +1,10 @@
+***************
+*** 946,949 ****
+  	}
+  	return ret;
+  }
+- EXPORT_SYMBOL(cap_file_mmap);
+--- 946,948 ----
+  	}
+  	return ret;
+  }
