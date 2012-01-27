@@ -313,7 +313,7 @@ static ssize_t unionfs_splice_read(struct file *file, loff_t *ppos,
 		goto out;
 
 	lower_file = unionfs_lower_file(file);
-	err = vfs_splice_to(lower_file, ppos, pipe, len, flags);
+	err = do_splice_to(lower_file, ppos, pipe, len, flags);
 	/* update our inode atime upon a successful lower splice-read */
 	if (err >= 0) {
 		fsstack_copy_attr_atime(dentry->d_inode,
@@ -346,7 +346,7 @@ static ssize_t unionfs_splice_write(struct pipe_inode_info *pipe,
 		goto out;
 
 	lower_file = unionfs_lower_file(file);
-	err = vfs_splice_from(pipe, lower_file, ppos, len, flags);
+	err = do_splice_from(pipe, lower_file, ppos, len, flags);
 	/* update our inode times+sizes upon a successful lower write */
 	if (err >= 0) {
 		fsstack_copy_inode_size(dentry->d_inode,
